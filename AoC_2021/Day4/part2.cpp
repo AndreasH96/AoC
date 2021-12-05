@@ -53,14 +53,7 @@ void performDraw(int draw,vector<arma::mat> &boards){
     }
 }
 
-int calcSum(vector<int> vec){
-    int sum = 0;
-    for (auto &&i : vec)
-    {
-        sum+=i;    
-    }
-    return sum;
-}
+
 int bingoSum(mat matrix){
     uvec rowSum = arma::find(arma::sum(matrix,0) == -5);
     uvec colSum = arma::find(arma::sum(matrix,1) == -5);
