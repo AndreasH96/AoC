@@ -28,6 +28,7 @@ def parseMapInput(path):
     lines = [line.split(" -> ") for line in open(path, "r").read().split('\n')]
     data = np.array([handleLine(line)  for line in lines])
     
+    
 
     matrix = createNumpyMatrix(data)
     
