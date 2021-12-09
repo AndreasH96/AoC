@@ -24,7 +24,8 @@ std::vector<std::string> SplitString(
     return splittedStrings;
 }
 
-std::vector<std::string> readFileRows(std::string path){
+std::vector<std::string> readFileRows(std::string path)
+{
     // Initialzie vector
     std::vector<std::string> rows;
     // Read from the text file
@@ -32,15 +33,17 @@ std::vector<std::string> readFileRows(std::string path){
 
     std::string myText;
     // Use a while loop together with the getline() function to read the file line by line
-    while (std::getline (MyReadFile, myText)) {
+    while (std::getline(MyReadFile, myText))
+    {
         rows.push_back(myText);
     }
     // Close the file
-    MyReadFile.close();  
+    MyReadFile.close();
     return rows;
 }
 
-std::string readWholeFile(std::string path){
+std::string readWholeFile(std::string path)
+{
     // Initialzie vector
     std::string file_content;
     // Read from the text file
@@ -48,6 +51,6 @@ std::string readWholeFile(std::string path){
     // Use a while loop together with the getline() function to read the file line by line
     std::getline(MyReadFile, file_content, '\0');
     // Close the file
-    MyReadFile.close();  
+    MyReadFile.close();
     return file_content;
 }
