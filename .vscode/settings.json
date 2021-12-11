@@ -66,5 +66,7 @@
         "complex": "cpp",
         "shared_mutex": "cpp",
         "regex": "cpp"
-    }
+    },
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
