@@ -4,7 +4,7 @@ use std::{collections::HashMap, fs, str};
 const TEST_PATH: &'static str = "./src/test_input.txt";
 const REAL_PATH: &'static str = "./src/real_input.txt";
 
-fn calc_folder_sizes(raw_data: &str) -> Vec<(String, usize)> {
+fn create_folder_structure(raw_data: &str) -> HashMap<String, Folder> {
     let mut path_commands: Vec<Vec<&str>> = raw_data
         .split("$ cd")
         .map(|x| {
@@ -44,6 +44,12 @@ fn calc_folder_sizes(raw_data: &str) -> Vec<(String, usize)> {
             );
         }
     }
+    return folders;
+}
+
+fn calc_folder_sizes(raw_data: &str) -> Vec<(String, usize)> {
+
+    let folders = create_folder_structure(raw_data);
 
     let sizes: Vec<(String, usize)> = folders
         .iter()
@@ -53,32 +59,36 @@ fn calc_folder_sizes(raw_data: &str) -> Vec<(String, usize)> {
     return sizes;
 }
 
-fn solve_part1(raw_data: &str) -> usize{
-    return calc_folder_sizes(&raw_data).iter().filter(|x| x.1 <= 100000).map(|x| x.1).sum();
+fn solve_part1(raw_data: &str) -> usize {
+    return calc_folder_sizes(&raw_data)
+        .iter()
+        .filter(|x| x.1 <= 100000)
+        .map(|x| x.1)
+        .sum();
 }
 
-fn solve_part2(raw_data: &str) -> (String,usize) {
+fn solve_part2(raw_data: &str) -> (String, usize) {
     let goal = 40000000;
     let sizes = calc_folder_sizes(raw_data);
     let total_space_used: usize = sizes.clone().iter().map(|x| x.1).max().unwrap();
-    let mut candidates: Vec<&(String, usize)> =
-        sizes.iter().filter(|x| (total_space_used - x.1) < goal).collect();
+    let mut candidates: Vec<&(String, usize)> = sizes
+        .iter()
+        .filter(|x| (total_space_used - x.1) < goal)
+        .collect();
     candidates.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
 
     return candidates[0].clone();
- 
 }
 
 fn main() {
     let test_data = fs::read_to_string(TEST_PATH).expect("Should have been able to read the file");
     let real_data = fs::read_to_string(REAL_PATH).expect("Should have been able to read the file");
-    
+
     println!("PART 1");
     println!("Test: {:?}", solve_part1(&test_data));
-    println!("Real: {:?}",  solve_part1(&real_data));
+    println!("Real: {:?}", solve_part1(&real_data));
 
     println!("PART 2");
     println!("Test: {:?}", solve_part2(&test_data));
-    println!("Real: {:?}",  solve_part2(&real_data));
-   
+    println!("Real: {:?}", solve_part2(&real_data));
 }
