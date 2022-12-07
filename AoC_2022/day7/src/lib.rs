@@ -40,8 +40,7 @@ impl Folder {
         let sub_folders = self.sub_folders_names.clone(); 
         for sub in sub_folders {
             let s = files_map.get(&sub).unwrap();
-            let test = s.get_size_recur(files_map) ;
-            size = size + test;
+            size += s.get_size_recur(files_map); 
         }
         return size;
     }
