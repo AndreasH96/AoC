@@ -30,7 +30,6 @@ fn part1(raw_data: &str) -> usize {
 
         let mut distance: Array1<i32> = &current_head_pos - &current_tail_pos;
         while distance[0].abs() > 1 || distance[1].abs() > 1 {
-            if distance[0].abs() > 1 || distance[1].abs() > 1 {
                 current_tail_pos[0] += if distance[0] != 0 {
                     distance[0] / distance[0].abs()
                 } else {
@@ -48,7 +47,7 @@ fn part1(raw_data: &str) -> usize {
                     "{:?},{:?}",
                     current_tail_pos[0], current_tail_pos[1]
                 ));
-            }
+            
         }
     }
     return tail_visits.len();
@@ -87,7 +86,6 @@ fn part2(raw_data: &str) -> usize {
                         0
                     };
 
-
                     if i == 9 {
                         tail_visits.insert(format!(
                             "{:?},{:?}",
@@ -109,10 +107,22 @@ fn main() {
     let real_data = fs::read_to_string(REAL_PATH).expect("Should have been able to read the file");
 
     println!("PART 1");
+    use std::time::Instant;
+    let now = Instant::now();
     println!("Test: {}", part1(&test_data));
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
+    let now = Instant::now();
     println!("Real: {}", part1(&real_data));
-
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
     println!("PART 2");
+    let now = Instant::now();
     println!("Test: {}", part2(&test_data2));
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
+    let now = Instant::now();
     println!("Real: {}", part2(&real_data));
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
 }
