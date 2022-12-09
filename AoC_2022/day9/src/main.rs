@@ -1,6 +1,5 @@
 use ndarray::{arr1, Array1};
 use std::collections::{HashMap, HashSet};
-use std::fmt::Display;
 use std::fs;
 use std::ops::Neg;
 
@@ -75,7 +74,7 @@ fn part2(raw_data: &str) -> usize {
         for _ in 0..step.1 {
             knot_positions[0][action.0] += action.1;
             for i in 1..knot_positions.len() {
-                let mut distance: Array1<i32> = &knot_positions[i - 1] - &knot_positions[i];
+                let  distance: Array1<i32> = &knot_positions[i - 1] - &knot_positions[i];
                 if distance[0].abs() > 1 || distance[1].abs() > 1 {
                     knot_positions[i][0] += if distance[0] != 0 {
                         distance[0] / distance[0].abs()
@@ -88,7 +87,6 @@ fn part2(raw_data: &str) -> usize {
                         0
                     };
 
-                    distance = &knot_positions[i - 1] - &knot_positions[i];
 
                     if i == 9 {
                         tail_visits.insert(format!(
