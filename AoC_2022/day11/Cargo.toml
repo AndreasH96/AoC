@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 derive-new = "0.5.9"
-text_io = "0.1.12"
 num = "0.4.0"
