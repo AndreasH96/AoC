@@ -61,9 +61,7 @@ fn solve(raw_data: &str, rounds: i32, divide: bool) -> u128 {
             let monkey = monkeys.get_mut(&id).unwrap();
             let throws = monkey.inspect(divide);
             for throw in throws {
-                let m = monkeys.get_mut(&throw.0).unwrap();
-                m.add_item(throw.1%modulo);
-
+               monkeys.get_mut(&throw.0).unwrap().add_item(throw.1%modulo);
             }
         }
     }
