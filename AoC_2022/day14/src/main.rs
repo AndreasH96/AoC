@@ -51,7 +51,7 @@ fn part1(lines: Vec<Vec<(i32, i32)>>) -> usize {
             .iter()
             .filter(|x| !rock_set.contains(&x) && !sand_positions.contains(&x))
             .collect();
-        if possible_positions.len() == 0 {
+        if possible_positions.len() == 0 { 
             sand_positions.insert(active_sand.clone());
             active_sand = sand_start.clone();
         } else {
