@@ -1,5 +1,4 @@
 use itertools::any;
-use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use text_io::scan;
