@@ -1,4 +1,5 @@
 use itertools::any;
+use rayon::prelude::*;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use text_io::scan;
@@ -54,37 +55,42 @@ fn part1(raw_input: &str, y: i32) -> i32 {
     return result;
 }
 
+fn extract_edges(
+    sensor: (&(i32, i32), &(i32, i32, i32)),
+    y: i32,
+    max_min: (i32, i32),
+) -> (i32, i32) {
+    let s = sensor.0;
+    let b = sensor.1;
+    if (s.1 - y).abs() <= b.2 {
+        let left_edge = s.0 - b.2 + (s.1 - y).abs();
+        let right_edge = s.0 + (b.2 - (s.1 - y).abs()).abs();
+        return (max_min.0.max(left_edge), max_min.1.min(right_edge));
+    }
+    return (0, 0);
+}
 
 fn part2(raw_input: &str, max_min: (i32, i32)) -> i128 {
-    let test = raw_input.lines().map(|x| extract_sensors_and_beacons(x));
+    let sensors_n_beacons = raw_input.lines().map(|x| extract_sensors_and_beacons(x));
 
     let mut sensor_map: HashMap<(i32, i32), (i32, i32, i32)> = HashMap::new();
     let mut beacon_set: HashSet<(i32, i32)> = HashSet::new();
-    test.for_each(|r| {
+    sensors_n_beacons.for_each(|r| {
         beacon_set.insert(r[1]);
         sensor_map.insert(r[0], (r[1].0, r[1].1, manhattan_dist(r[0], r[1])));
     });
 
     for y in max_min.0..=max_min.1 {
-
-        let mut edges: Vec<(i32,i32)> = Vec::new();
-        for s in sensor_map.keys() { 
-            if (s.1 - y).abs() <= sensor_map.get(&s).unwrap().2 {
-                let left_edge = s.0 - sensor_map.get(&s).unwrap().2 + (s.1 - y).abs();
-                let right_edge = s.0 + (sensor_map.get(&s).unwrap().2 - (s.1 - y).abs()).abs();
-                edges.insert(0, (max_min.0.max(left_edge),max_min.1.min(right_edge)));
-            }
-        }  
-        edges.sort_by(|a,b| a.1.cmp(&b.1));
-
-        for edge in edges.clone(){
-            
-            if (!any(edges.clone(), |x| (x.0..=x.1).contains(&(edge.0-1))))  && edge.0>0{
-                return ((edge.0 as i128-1) *4000000) +y as i128 ;
+        let edges: Vec<(i32, i32)> = sensor_map
+            .iter()
+            .map(|sensor| extract_edges(sensor, y, max_min))
+            .filter(|x| *x != (0, 0))
+            .collect();
+        for edge in &edges {
+            if (!any(&edges, |x| (x.0..=x.1).contains(&(edge.0 - 1)))) && edge.0 > 0 {
+                return ((edge.0 as i128 - 1) * 4000000) + y as i128;
             }
         }
-
-
     }
     return 0;
 }
@@ -100,20 +106,19 @@ fn main() {
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
     let now = Instant::now();
-    println!("Real: {}", part1(&real_input,2000000));
+    println!("Real: {}", part1(&real_input, 2000000));
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}\n", elapsed);
     let now = Instant::now();
-    //
+
     println!("PART 2");
     println!("Test: {:?}", part2(&test_input, (0, 20)));
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
     let now = Instant::now();
-    println!("Real: {}",  part2(&real_input, (0, 4000000)));
+    println!("Real: {}", part2(&real_input, (0, 4000000)));
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
-    //let now = Instant::now();
 }
 
 // Create two sets, one for sensor positions and one for beacon positions *

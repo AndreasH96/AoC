@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 text_io = "0.1.12"
 itertools = "0.10.5"
+rayon = "1.5"
