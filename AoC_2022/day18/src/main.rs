@@ -1,8 +1,18 @@
+use lazy_static::lazy_static; // 1.4.0
+use parking_lot::Mutex;
 use std::{collections::HashSet, fs, ops::Neg};
 const TEST_PATH: &'static str = "./src/test_input.txt";
 const REAL_PATH: &'static str = "./src/real_input.txt";
 
-fn get_number_of_adjacent(blocks: &HashSet<(i32, i32, i32)>, block: (i32, i32, i32)) -> i32 {
+lazy_static! {
+    static ref KNOWN_BLOCKED: Mutex<HashSet<(i32, i32, i32)>> = Mutex::new(HashSet::new());
+}
+
+fn get_adjacent(
+    blocks: &HashSet<(i32, i32, i32)>,
+    block: (i32, i32, i32),
+    want_air: bool,
+) -> Vec<(i32, i32, i32)> {
     let additions: Vec<(i32, i32, i32)> = vec![
         (1, 0, 0),
         (1.neg(), 0, 0),
@@ -11,25 +21,26 @@ fn get_number_of_adjacent(blocks: &HashSet<(i32, i32, i32)>, block: (i32, i32, i
         (0, 0, 1),
         (0, 0, 1.neg()),
     ];
-    let adjacents: Vec<(i32, i32, i32)> = additions
-        .iter()
-        .map(|x| {
-            vec![
-                block.0 as i32 + x.0,
-                block.1 as i32 + x.1,
-                block.2 as i32 + x.2,
-            ]
-        })
-        .filter(|x| x.iter().all(|y| *y >= 0))
-        .map(|x| (x[0] as i32, x[1] as i32, x[2] as i32))
-        .filter(|x| blocks.contains(x))
-        .collect();
+    let adjacent_map = additions.iter().map(|x| {
+        (
+            block.0 as i32 + x.0,
+            block.1 as i32 + x.1,
+            block.2 as i32 + x.2,
+        )
+    });
 
-    return adjacents.len() as i32;
+    let mut adjacent: Vec<(i32, i32, i32)> = Vec::new();
+    if !want_air {
+        adjacent = adjacent_map.filter(|x| blocks.contains(x)).collect();
+    } else {
+        adjacent = adjacent_map.filter(|x| !blocks.contains(x)).collect();
+    }
+
+    return adjacent;
 }
 
 // Checks if there is at least one direction in which the block is free
-fn on_brink(blocks: &HashSet<(i32, i32, i32)>, block: &(i32, i32, i32)) -> bool {
+fn touches_air(blocks: &HashSet<(i32, i32, i32)>, block: &(i32, i32, i32)) -> bool {
     let max_x = blocks.iter().map(|x| x.0).max().unwrap();
     let min_x = blocks.iter().map(|x| x.0).min().unwrap();
 
@@ -67,6 +78,63 @@ fn on_brink(blocks: &HashSet<(i32, i32, i32)>, block: &(i32, i32, i32)) -> bool 
     return free_directions > 0;
 }
 
+fn on_edge(map: &HashSet<(i32, i32, i32)>, start: &(i32, i32, i32)) -> bool {
+    let mut queue: Vec<(i32, i32, i32)> = Vec::new();
+    let mut explored: HashSet<(i32, i32, i32)> = HashSet::new();
+
+    get_adjacent(map, *start, true)
+        .iter()
+        .for_each(|x| queue.insert(0, *x));
+
+    while queue.len() > 0 {
+        let current = queue.pop().unwrap();
+
+        if touches_air(map, &current) {
+            return true;
+        }
+
+        if !KNOWN_BLOCKED.lock().contains(&current) && !map.contains(&current) {
+            explored.insert(current);
+            get_adjacent(map, current, true).iter().for_each(|x| {
+                if !explored.contains(x) && !queue.contains(x) {
+                    queue.insert(0, *x)
+                }
+            });
+        }
+    }
+    explored.iter().for_each(|x| {
+        KNOWN_BLOCKED.lock().insert(*x);
+    });
+    return false;
+}
+
+fn get_free_sides(
+    blocks: &HashSet<(i32, i32, i32)>,
+    block: (i32, i32, i32),
+) -> Vec<(i32, i32, i32)> {
+    let additions: Vec<(i32, i32, i32)> = vec![
+        (1, 0, 0),
+        (1.neg(), 0, 0),
+        (0, 1, 0),
+        (0, 1.neg(), 0),
+        (0, 0, 1),
+        (0, 0, 1.neg()),
+    ];
+    let adjacent: Vec<(i32, i32, i32)> = additions
+        .iter()
+        .map(|x| {
+            (
+                block.0 as i32 + x.0,
+                block.1 as i32 + x.1,
+                block.2 as i32 + x.2,
+            )
+        })
+        .filter(|x| !blocks.contains(x) && on_edge(blocks, x))
+        .collect();
+
+    return adjacent;
+}
+
 fn part1(input_data: String) -> i32 {
     let mut blocks: HashSet<(i32, i32, i32)> = HashSet::new();
 
@@ -79,9 +147,10 @@ fn part1(input_data: String) -> i32 {
 
     for line in data {
         let block = (line[0], line[1], line[2]);
-        touching_faces += get_number_of_adjacent(&blocks, block);
+        touching_faces += get_adjacent(&blocks, block, false).len() as i32;
         blocks.insert(block);
     }
+
     return 6 * blocks.len() as i32 - 2 * touching_faces;
 }
 
@@ -97,16 +166,16 @@ fn part2(input_data: String) -> i32 {
 
     let brink: HashSet<(i32, i32, i32)> = blocks
         .iter()
-        .filter(|x| on_brink(&blocks, &*x))
+        .filter(|x| on_edge(&blocks, &*x))
         .map(|x| *x)
         .collect();
-        
-    let mut touching_faces: i32 = 0;
-    brink.iter().for_each(|b| {
-        touching_faces += get_number_of_adjacent(&blocks, *b);
-    });
 
-    return 6 * brink.len() as i32 - touching_faces;
+    let mut free_sides: i32 = 0;
+    brink.iter().for_each(|b| {
+        free_sides += get_free_sides(&blocks, *b).len() as i32;
+    });
+    KNOWN_BLOCKED.lock().clear();
+    return free_sides;
 }
 
 fn main() {
@@ -131,7 +200,7 @@ fn main() {
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
     let now = Instant::now();
-    println!("Real: {}", part2(real_input) - 2510);
+    println!("Real: {}", part2(real_input));
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
 }
