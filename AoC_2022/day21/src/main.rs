@@ -3,13 +3,13 @@ use std::{collections::HashMap, fs};
 const TEST_PATH: &'static str = "./src/test_input.txt";
 const REAL_PATH: &'static str = "./src/real_input.txt";
 
-fn get_monkey_val(name: String, monkeys: &HashMap<String, String>) -> i64 {
-    let monkey: &String = monkeys.get(&name).unwrap();
+fn get_monkey_val(name: &String, monkeys: &HashMap<String, String>) -> i64 {
+    let monkey: &String = monkeys.get(name).unwrap();
     if monkey.contains(' ') {
         let spl: Vec<&str> = monkey.split(' ').collect();
 
-        let first = get_monkey_val(spl[0].to_string(), monkeys);
-        let second = get_monkey_val(spl[2].to_string(), monkeys);
+        let first = get_monkey_val(&spl[0].to_string(), monkeys);
+        let second = get_monkey_val(&spl[2].to_string(), monkeys);
 
         match spl[1] {
             "+" => return first + second,
@@ -28,7 +28,7 @@ fn part1(input: String) -> i64 {
         .map(|x| x.split(":").collect())
         .map(|x: Vec<&str>| (x[0].to_string(), x[1].trim().to_string()))
         .collect();
-    return get_monkey_val("root".to_string(), &data);
+    return get_monkey_val(&"root".to_string(), &data);
 }
 
 fn part2(input: String) -> i64 {
@@ -46,15 +46,15 @@ fn part2(input: String) -> i64 {
         .collect();
     let me = "humn".to_string();
     let mut val: i64 = data.get(&me).unwrap().parse().unwrap();
-    let mut first = get_monkey_val(names[0].clone(), &data);
+    let mut first = get_monkey_val(&names[0], &data);
     let first_init = first.clone();
 
     data.remove(&me);
     val += 1000;
     data.insert(me.clone(), val.to_string());
-    first = get_monkey_val(names[0].clone(), &data);
+    first = get_monkey_val(&names[0], &data);
 
-    let mut second = get_monkey_val(names[2].clone(), &data);
+    let mut second = get_monkey_val(&names[2], &data);
     let mut diff;
     let sign = if first > first_init { 1 } else { -1 };
     let scaling = 51;
@@ -69,8 +69,8 @@ fn part2(input: String) -> i64 {
 
         data.remove(&me);
         data.insert(me.clone(), val.to_string());
-        first = get_monkey_val(names[0].clone(), &data);
-        second = get_monkey_val(names[2].clone(), &data);
+        first = get_monkey_val(&names[0], &data);
+        second = get_monkey_val(&names[2], &data);
     }
 
     return val;
