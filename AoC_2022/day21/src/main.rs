@@ -47,8 +47,6 @@ fn part2(input: String) -> i64 {
         .collect();
     let me = "humn".to_string();
     let mut val: i64 = data.get(&me).unwrap().parse().unwrap();
-    data.remove(&me);
-    data.insert(me.clone(), val.to_string());
     let mut first = get_monkey_val(names[0].clone(), &data);
     let first_init = first.clone();
 
@@ -60,14 +58,14 @@ fn part2(input: String) -> i64 {
     let mut second = get_monkey_val(names[2].clone(), &data);
     let mut diff = first - second;
     let sign = if first > first_init { 1 } else { -1 };
-
+    let scaling = 51;
     while first != second {
         diff = first - second;
 
         if diff < 0 {
-            val += (diff / 100).min(-1) * sign;
+            val += (diff / scaling).min(-1) * sign;
         } else if diff > 0 {
-            val -= (diff / 100).max(1) * sign;
+            val -= (diff / scaling).max(1) * sign;
         }
 
         data.remove(&me);
