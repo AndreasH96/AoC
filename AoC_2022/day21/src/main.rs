@@ -3,9 +3,8 @@ use std::{collections::HashMap, fs};
 const TEST_PATH: &'static str = "./src/test_input.txt";
 const REAL_PATH: &'static str = "./src/real_input.txt";
 
-fn get_monkey_val(name: String, monkeys: &HashMap<String, String>) -> i64{
+fn get_monkey_val(name: String, monkeys: &HashMap<String, String>) -> i64 {
     let monkey: &String = monkeys.get(&name).unwrap();
-    let depending_on_human = name == "humn".to_string();
     if monkey.contains(' ') {
         let spl: Vec<&str> = monkey.split(' ').collect();
 
@@ -56,7 +55,7 @@ fn part2(input: String) -> i64 {
     first = get_monkey_val(names[0].clone(), &data);
 
     let mut second = get_monkey_val(names[2].clone(), &data);
-    let mut diff = first - second;
+    let mut diff;
     let sign = if first > first_init { 1 } else { -1 };
     let scaling = 51;
     while first != second {
