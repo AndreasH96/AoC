@@ -1,64 +1,54 @@
-use std::{fs};
+use std::fs;
 
 const TEST_PATH: &'static str = "./src/test_input.txt";
 const REAL_PATH: &'static str = "./src/real_input.txt";
 
-fn add_snafu(s0: String, s1: String) -> String {
+fn add_snafu(s0: Vec<char>, s1: Vec<char>) -> String {
     let largest = if s0.len() > s1.len() {
         s0.clone()
     } else {
         s1.clone()
     };
-    let mut snafu: Vec<char> = largest.chars().collect();
+    let mut snafu: Vec<char> = largest;
     let snafu_len = snafu.len() - 1;
     let mut overflow: Vec<char> = (0..=snafu_len + 1).map(|_| '0').collect();
     let mut overflow_occured = false;
-    for (i, (c0, c1)) in s0.chars().rev().zip(s1.chars().rev()).enumerate() {
-        let d = c0 as i32 + c1 as i32 - (2 * 48);
+    for (i, (c0, c1)) in s0.iter().rev().zip(s1.iter().rev()).enumerate() {
+        let d = *c0 as i32 + *c1 as i32 - (2 * 48);
 
         if d.abs() < 3 {
-            snafu[snafu_len - i] = format!("{}", (d + 48) as u8 as char)
-                .chars()
-                .next()
-                .unwrap();
+            snafu[snafu_len - i] = (d + 48) as u8 as char;
         } else {
             overflow_occured = true;
             if d < 0 {
-                snafu[snafu_len - i] = format!("{}", (d + 53) as u8 as char)
-                    .chars()
-                    .next()
-                    .unwrap();
+                snafu[snafu_len - i] = (d + 53) as u8 as char;
                 overflow[snafu_len - i] = '/';
             } else {
-                snafu[snafu_len - i] = format!("{}", (d + 43) as u8 as char)
-                    .chars()
-                    .next()
-                    .unwrap();
+                snafu[snafu_len - i] = (d + 43) as u8 as char;
                 overflow[snafu_len - i] = '1';
             }
         }
     }
 
+    if snafu[0] == '0' {
+        snafu.remove(0);
+        overflow.remove(0);
+    }
     if overflow_occured {
-        return add_snafu(
-            String::from_iter(snafu),
-            String::from_iter(overflow.clone()),
-        );
+        return add_snafu(snafu, overflow);
     } else {
         return String::from_iter(snafu);
     }
 }
 
 fn solve(text_input: String) -> String {
-    let mut snafu = "0".to_string();
-    for row in text_input.lines() {
-        snafu = add_snafu(snafu, row.to_string());
-        let first_val_pos = snafu.clone().chars().position(|x| x != '0').unwrap();
-        let chs: Vec<String> = snafu.chars().map(|x| x.to_string()).collect();
-        snafu = chs[first_val_pos..].join("");
-    }
-    snafu = snafu.replace(".", "=").replace("/", "-");
-
+    let snafu = text_input
+        .lines()
+        .map(|x| x.to_string())
+        .reduce(|a, b| add_snafu(a.chars().collect(), b.chars().collect()))
+        .unwrap()
+        .replace(".", "=")
+        .replace("/", "-");
     return snafu;
 }
 
